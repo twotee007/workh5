@@ -19,12 +19,14 @@ router.get("/", (req, res) => {
         creator.name AS creator_name,
         creator.Born AS creator_born,
         creator.bio AS creator_bio
-        FROM movies , stars , person AS star , creators, person  AS creator 
-        WHERE movies.mid = stars.mids
-        AND stars.pids = star.pid
-        AND movies.mid = creators.midc
-        AND creators.pidc = creator.pid
-        AND movies.title LIKE ?
+        FROM 
+            movies , stars , person AS star , creators, person  AS creator 
+        WHERE 
+            movies.mid = stars.mids
+            AND stars.pids = star.pid
+            AND movies.mid = creators.midc
+            AND creators.pidc = creator.pid
+            AND movies.title LIKE ?
     `;
     
     conn.query(sql, [title], (err, results: any[], fields) => {
