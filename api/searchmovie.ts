@@ -4,23 +4,81 @@ export const router = express.Router();
 
 router.get("/", (req, res) => {
     const title = `%${req.query.title}%`;
-    const queryString = `
-        SELECT * 
-        FROM movies,creators,stars
-        WHERE movies.mid = creators.midc
-        AND movies.mid = stars.mids
+    const sql = `
+        SELECT  movies.mid,
+        movies.title AS movie_title,
+        movies.plot AS movie_plot,
+        movies.rating AS movie_rating,
+        movies.year AS movie_year,
+        movies.genre AS movie_genre,
+        stars.pids AS actor_id,
+        actor.name AS actor_name,
+        actor.Born AS actor_born,
+        actor.bio AS actor_bio,
+        creators.pidc AS creator_id,
+        creator.name AS creator_name,
+        creator.Born AS creator_born,
+        creator.bio AS creator_bio
+        FROM movies , stars , person AS actor , creators, person  AS creator 
+        WHERE movies.mid = stars.mids
+        AND stars.pids = actor.pid
+        AND movies.mid = creators.midc
+        AND creators.pidc = creator.pid
         AND movies.title LIKE ?
     `;
-    conn.query(queryString, [title, title], (err, result, fields) => {
-        if (result && result.length > 0) {
-            res.json(result);
-        } else {
-            res.json({
-                success: false,
-                Error: "Incorrect Select Person."
-            });
-        }
+    
+    conn.query(sql, [title], (err, results: any[], fields) => {
+        if (err) throw err;
+
+        
+        const moviesMap = new Map<number, any>();
+
+        results.forEach((row: any) => {
+            const movieId = row.mid;
+
+            if (!moviesMap.has(movieId)) {
+                moviesMap.set(movieId, {
+                    movie_id: row.mid,
+                    movie_title: row.movie_title,
+                    movies_plot : row.movie_plot,
+                    movies_rating : row.movie_rating,
+                    movies_year : row.movie_year,
+                    movies_genre : row.movie_genre,
+                    actors: [],
+                    creators: [],
+                });
+            }
+
+            const movie = moviesMap.get(movieId);
+
+            const actor = {
+                actor_id: row.actor_id,
+                actor_name: row.actor_name,
+                actor_born: row.actor_born,
+                actor_bio: row.actor_bio,
+            };
+
+            const creator = {
+                creator_id: row.creator_id,
+                creator_name: row.creator_name,
+                creator_born: row.creator_born,
+                creator_bio: row.creator_bio,
+            };
+
+            // เพิ่มเช็คว่านักแสดงหรือผู้กำกับซ้ำหรือไม่
+            if (!movie.actors.find((a: any) => a.actor_id === actor.actor_id)) {
+                movie.actors.push(actor);
+            }
+
+            if (!movie.creators.find((c: any) => c.creator_id === creator.creator_id)) {
+                movie.creators.push(creator);
+            }
+        });
+
+        const jsonData = { movies: Array.from(moviesMap.values()) };
+        res.json(jsonData);
     });
 });
+
 
 
