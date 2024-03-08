@@ -11,17 +11,17 @@ router.get("/", (req, res) => {
         movies.rating AS movie_rating,
         movies.year AS movie_year,
         movies.genre AS movie_genre,
-        stars.pids AS actor_id,
-        actor.name AS actor_name,
-        actor.Born AS actor_born,
-        actor.bio AS actor_bio,
+        stars.pids AS star_id,
+        star.name AS star_name,
+        star.Born AS star_born,
+        star.bio AS star_bio,
         creators.pidc AS creator_id,
         creator.name AS creator_name,
         creator.Born AS creator_born,
         creator.bio AS creator_bio
-        FROM movies , stars , person AS actor , creators, person  AS creator 
+        FROM movies , stars , person AS star , creators, person  AS creator 
         WHERE movies.mid = stars.mids
-        AND stars.pids = actor.pid
+        AND stars.pids = star.pid
         AND movies.mid = creators.midc
         AND creators.pidc = creator.pid
         AND movies.title LIKE ?
@@ -51,11 +51,11 @@ router.get("/", (req, res) => {
 
             const movie = moviesMap.get(movieId);
 
-            const actor = {
-                actor_id: row.actor_id,
-                actor_name: row.actor_name,
-                actor_born: row.actor_born,
-                actor_bio: row.actor_bio,
+            const star = {
+                star_id: row.star_id,
+                star_name: row.star_name,
+                star_born: row.starr_born,
+                star_bio: row.star_bio,
             };
 
             const creator = {
@@ -66,8 +66,8 @@ router.get("/", (req, res) => {
             };
 
             // เพิ่มเช็คว่านักแสดงหรือผู้กำกับซ้ำหรือไม่
-            if (!movie.actors.find((a: any) => a.actor_id === actor.actor_id)) {
-                movie.actors.push(actor);
+            if (!movie.actors.find((a: any) => a.star_id === star.star_id)) {
+                movie.actors.push(star);
             }
 
             if (!movie.creators.find((c: any) => c.creator_id === creator.creator_id)) {
@@ -75,7 +75,7 @@ router.get("/", (req, res) => {
             }
         });
 
-        const jsonData = { movies: Array.from(moviesMap.values()) };
+        const jsonData =  { movie :  Array.from(moviesMap.values())};
         res.json(jsonData);
     });
 });

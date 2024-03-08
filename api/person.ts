@@ -50,6 +50,31 @@ router.post("/insert", (req, res) => {
     });
   });
 
+
+  router.post("/insertmax", (req, res) => {
+    let persons = req.body; 
+
+    if (!Array.isArray(persons) || persons.length === 0) {
+        return res.status(400).json({ error: 'Invalid request body. Expected an array of persons.' });
+    }
+
+    for (const person of persons) {
+        let sql =
+            "INSERT INTO `person`(`name`, `Born`, `imgp`, `bio`) VALUES (?,?,?,?)";
+        sql = mysql.format(sql, [
+            person.name,
+            person.Born,
+            person.imgp,
+            person.bio,
+        ]);
+
+        conn.query(sql, (err, result) => {
+            if (err) throw err;
+        });
+    }
+    res.status(201).json({ success: true, message: 'Persons inserted successfully.' });
+});
+
   router.delete("/delete/:person", async (req, res) => {
     const person = req.params.person;
     let pid : number;

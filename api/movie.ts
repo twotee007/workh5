@@ -53,6 +53,32 @@ router.post("/insert", (req, res) => {
     });
   });
 
+  router.post("/insertmax", (req, res) => {
+    let movies = req.body; 
+    if (!Array.isArray(movies) || movies.length === 0) {
+        return res.status(400).json({ error: 'Invalid request body. Expected an array of movies.' });
+    }
+    for(const movie of movies){
+    let sql =
+            "INSERT INTO `movies`(`title`, `plot`, `rating`, `year`, `movietime`, `genre`, `poster`) VALUES (?,?,?,?,?,?,?)";
+        sql = mysql.format(sql,[
+             movie.title,
+            movie.plot,
+            movie.rating,
+            movie.year,
+            movie.movietime,
+            movie.genre,
+            movie.poster,
+        ])
+        conn.query(sql, (err, result) => {
+            if (err) throw err;
+            res
+            .status(201)
+            .json({ affected_rows: result.affectedRows, last_idx: result.insertId });
+        });
+    }
+});
+
   router.delete("/delete/:movie", async (req, res) => {
     const movie = req.params.movie;
     let movieid : number;
